@@ -1,14 +1,10 @@
 'use server';
 
 /**
- * @fileOverview This flow determines whether to fallback to a default support message based on confidence score.
- *
- * - shouldFallbackToSupport - A function that determines if the chatbot should fallback to the support message.
- * - ShouldFallbackToSupportInput - The input type for the shouldFallbackToSupport function.
- * - ShouldFallbackToSupportOutput - The return type for the shouldFallbackToSupport function.
+ * @fileOverview Determines whether to fallback to a default support message based on confidence score.
+ * This is a simple deterministic function - no LLM call needed.
  */
 
-import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const ShouldFallbackToSupportInputSchema = z.object({
@@ -37,33 +33,20 @@ export type ShouldFallbackToSupportOutput = z.infer<
   typeof ShouldFallbackToSupportOutputSchema
 >;
 
+/**
+ * Determines if bot response should fallback to support based on confidence score.
+ * Threshold: < 0.5 = fallback, >= 0.5 = use response
+ * No LLM call - simple deterministic logic.
+ */
 export async function shouldFallbackToSupport(
   input: ShouldFallbackToSupportInput
 ): Promise<ShouldFallbackToSupportOutput> {
-  return shouldFallbackToSupportFlow(input);
+  const shouldFallback = input.confidenceScore < 0.5;
+  
+  return {
+    shouldFallback,
+    fallbackMessage: shouldFallback
+      ? `${input.defaultFallbackText} ${input.supportURL}`
+      : undefined,
+  };
 }
-
-const prompt = ai.definePrompt({
-  name: 'shouldFallbackToSupportPrompt',
-  input: {schema: ShouldFallbackToSupportInputSchema},
-  output: {schema: ShouldFallbackToSupportOutputSchema},
-  prompt: `Given the confidence score of the chatbot's answer ({{confidenceScore}}), determine whether to fallback to a default support message. If the confidence score is below 0.5, return shouldFallback as true and provide a fallback message using the default fallback text ({{defaultFallbackText}}) and support URL ({{supportURL}}). If the confidence score is 0.5 or above, return shouldFallback as false.
-
-  The fallback message should be a concatenation of the default fallback text and the support URL.
-  `,
-});
-
-const shouldFallbackToSupportFlow = ai.defineFlow(
-  {
-    name: 'shouldFallbackToSupportFlow',
-    inputSchema: ShouldFallbackToSupportInputSchema,
-    outputSchema: ShouldFallbackToSupportOutputSchema,
-  },
-  async input => {
-    const {output} = await prompt(input);
-    if (output?.shouldFallback) {
-      output.fallbackMessage = `${input.defaultFallbackText} ${input.supportURL}`;
-    }
-    return output!;
-  }
-);
