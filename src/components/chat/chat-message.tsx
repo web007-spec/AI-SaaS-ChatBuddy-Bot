@@ -15,6 +15,15 @@ interface ChatMessageProps {
 
 const getInitials = (name: string) => name.charAt(0).toUpperCase();
 
+const getSafeHostname = (urlString: string): string => {
+  try {
+    return new URL(urlString).hostname || urlString;
+  } catch {
+    // If URL is invalid, return the string as-is
+    return urlString;
+  }
+};
+
 export function ChatMessage({ message, onUpdateMessage }: ChatMessageProps) {
   const isBot = message.role === "bot";
   const { toast } = useToast();
@@ -69,7 +78,7 @@ export function ChatMessage({ message, onUpdateMessage }: ChatMessageProps) {
                   rel="noopener noreferrer"
                   className="flex items-center gap-1.5 text-xs text-primary hover:underline bg-primary/10 px-2 py-1 rounded-md"
                 >
-                  {new URL(source).hostname}
+                  {getSafeHostname(source)}
                   <ExternalLink className="w-3 h-3" />
                 </a>
               ))}

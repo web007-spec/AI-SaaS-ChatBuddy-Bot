@@ -41,15 +41,20 @@ export function ChatMessages({
 
   useEffect(() => {
     if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTo({
-        top: scrollAreaRef.current.scrollHeight,
-        behavior: "smooth",
-      });
+      // Find the Viewport element (the scrollable container inside ScrollArea)
+      const viewport = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
+      if (viewport) {
+        // Scroll to bottom with smooth behavior
+        viewport.scrollTo({
+          top: viewport.scrollHeight,
+          behavior: "smooth",
+        });
+      }
     }
   }, [messages, isLoading]);
 
   return (
-    <ScrollArea className="flex-grow h-0" viewportRef={scrollAreaRef}>
+    <ScrollArea ref={scrollAreaRef} className="flex-grow h-0">
       <div className="p-4 space-y-4">
         <AnimatePresence initial={false}>
           {messages.map((message, i) => (
