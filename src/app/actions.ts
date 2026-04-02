@@ -6,6 +6,9 @@ import { faqContentString } from '@/lib/faq';
 import { chatConfig } from '@/lib/config';
 import type { ChatMessage, Feedback } from '@/lib/types';
 
+// Generate unique ID with random suffix to avoid collisions
+const generateUniqueId = () => `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+
 export async function handleUserMessage(
   history: ChatMessage[]
 ): Promise<ChatMessage> {
@@ -13,7 +16,7 @@ export async function handleUserMessage(
 
   if (!userMessage) {
     return {
-      id: Date.now().toString(),
+      id: generateUniqueId(),
       role: 'bot',
       content: 'An error occurred. Please try sending your message again.',
       timestamp: Date.now(),
@@ -37,7 +40,7 @@ export async function handleUserMessage(
 
     if (fallbackDecision.shouldFallback && fallbackDecision.fallbackMessage) {
       return {
-        id: Date.now().toString(),
+        id: generateUniqueId(),
         role: 'bot',
         content: fallbackDecision.fallbackMessage,
         sources: [],
@@ -47,7 +50,7 @@ export async function handleUserMessage(
     }
 
     return {
-      id: Date.now().toString(),
+      id: generateUniqueId(),
       role: 'bot',
       content: generationResult.answer,
       sources: generationResult.sources,
@@ -57,7 +60,7 @@ export async function handleUserMessage(
   } catch (error) {
     console.error('Error handling user message:', error);
     return {
-      id: Date.now().toString(),
+      id: generateUniqueId(),
       role: 'bot',
       content: 'Something went wrong, please try again.',
       timestamp: Date.now(),

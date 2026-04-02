@@ -13,6 +13,10 @@ interface ChatPanelProps {
   onClose: () => void;
 }
 
+// Generate unique ID with counter to avoid collisions
+let messageCounter = 0;
+const generateUniqueId = () => `${Date.now()}-${messageCounter++}`;
+
 export function ChatPanel({ onClose }: ChatPanelProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -32,7 +36,7 @@ export function ChatPanel({ onClose }: ChatPanelProps) {
     if (isLoading) return;
 
     const userMessage: ChatMessage = {
-      id: Date.now().toString(),
+      id: generateUniqueId(),
       role: "user",
       content,
       timestamp: Date.now(),
