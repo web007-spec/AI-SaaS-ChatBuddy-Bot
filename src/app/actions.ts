@@ -11,11 +11,9 @@ import type { ChatMessage, Feedback } from '@/lib/types';
 const generateUniqueId = () => `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
 export async function handleUserMessage(
-  history: ChatMessage[]
+  userContent: string
 ): Promise<ChatMessage> {
-  const userMessage = history.findLast((m) => m.role === 'user');
-
-  if (!userMessage) {
+  if (!userContent || userContent.trim().length === 0) {
     return {
       id: generateUniqueId(),
       role: 'bot',
@@ -26,7 +24,7 @@ export async function handleUserMessage(
 
   try {
     const generationResult = await generateAnswerFromFAQ({
-      message: userMessage.content,
+      message: userContent,
       faqContent: faqContentString,
     });
 

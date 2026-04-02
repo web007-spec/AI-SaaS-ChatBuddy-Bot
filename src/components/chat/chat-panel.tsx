@@ -41,11 +41,11 @@ export function ChatPanel({ onClose }: ChatPanelProps) {
       content,
       timestamp: Date.now(),
     };
-    const newHistory = [...messages, userMessage];
-    setMessages(newHistory);
+    setMessages((prev) => [...prev, userMessage]);
     setIsLoading(true);
 
-    const botResponse = await handleUserMessage(newHistory);
+    // Only send the user message content, not the entire history
+    const botResponse = await handleUserMessage(content);
     setMessages((prev) => [...prev, botResponse]);
     setIsLoading(false);
   };
