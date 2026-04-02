@@ -2,6 +2,7 @@
 
 import { generateAnswerFromFAQ } from '@/ai/flows/generate-answer-from-faq';
 import { shouldFallbackToSupport } from '@/ai/flows/fallback-to-support';
+import { citeSourcesForAnswer } from '@/ai/flows/cite-sources-for-answer';
 import { faqContentString } from '@/lib/faq';
 import { chatConfig } from '@/lib/config';
 import type { ChatMessage, Feedback } from '@/lib/types';
@@ -29,6 +30,12 @@ export async function handleUserMessage(
       faqContent: faqContentString,
     });
 
+    // Validate and filter sources
+    const citedSources = await citeSourcesForAnswer({
+      answer: generationResult.answer,
+      sources: generationResult.sources,
+    });
+
     const isUncertain = /not sure|don't know|unable to answer|contact support/i.test(generationResult.answer);
     const confidenceScore = isUncertain ? 0.4 : 0.9;
 
@@ -53,7 +60,7 @@ export async function handleUserMessage(
       id: generateUniqueId(),
       role: 'bot',
       content: generationResult.answer,
-      sources: generationResult.sources,
+      sources: citedSources.sources,
       feedback: null,
       timestamp: Date.now(),
     };
